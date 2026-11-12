@@ -1,0 +1,38 @@
+name: opengym
+
+services:
+  api:
+    image: ghcr.io/duartesantos8/opengym-api:latest
+    restart: unless-stopped
+    environment:
+      - PORT=${PORT:-3000}
+      - DATA_DIR=/data
+      - TRUST_PROXY=${TRUST_PROXY:-1}
+      - RP_ID=${RP_ID}
+      - ORIGIN=${ORIGIN}
+      - RP_NAME=${RP_NAME:-openGym}
+      - PASSWORD_LOGIN=${PASSWORD_LOGIN:-}
+      - FIRST_USER_ADMIN=${FIRST_USER_ADMIN:-}
+      - INVITE_ONLY=${INVITE_ONLY:-}
+      - ALLOW_GUEST=${ALLOW_GUEST:-}
+      - SESSION_DAYS=${SESSION_DAYS:-}
+    volumes:
+      - ${DATA_PATH:-./data}:/data
+      - ${COACH_AUTH_PATH:-./coach-auth}:/coach-auth
+
+  web:
+    image: ghcr.io/duartesantos8/opengym-web:latest
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${WEB_PORT:-8080}:${NGINX_PORT:-80}"
+    environment:
+      - NGINX_PORT=${NGINX_PORT:-80}
+      - BACKEND=${BACKEND:-api}
+      - PORT=${PORT:-3000}
+      - RESOLVER=${RESOLVER:-127.0.0.11}
+      - CF_CONNECTING_IP=${CF_CONNECTING_IP:-}
+      - BASE_PATH=${BASE_PATH:-}
+      - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
